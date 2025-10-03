@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useProvinceStore } from '@/zustand/useProvinceStore';
-import { ApiResponse, Province, Commune } from '@/interfaces/type';
+import { ApiResponse, Province } from '@/interfaces/type';
+import axios from 'axios';
 
 const useFetchProvinces = () => {
     const { setProvinces, setCommunesForProvince } = useProvinceStore();
@@ -8,29 +9,17 @@ const useFetchProvinces = () => {
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const currentDate = new Date().toISOString().split('T')[0];
+                const date = process.env.NEXT_PUBLIC_API_DATE || new Date().toISOString().split('T')[0];
+                const apiUrl = `/api/provinces?date=${date}`;
 
-                const apiUrl = process.env.NEXT_PUBLIC_VIETNAM_API_URL;
+                const response = await axios.get(apiUrl);
+                const data: ApiResponse = response.data;
 
-                if (!apiUrl) {
-                    console.error('API URL not configured!');
-                    return;
-                }
-
-                const fullApiUrl = `${apiUrl}address-kit/${currentDate}/provinces`;
-
-                const response = await fetch(fullApiUrl);
-                if (!response.ok) {
-                    console.error('Failed to fetch provinces:', response.statusText);
-                    return;
-                }
-
-                const data: ApiResponse = await response.json();
                 if (data && data.provinces) {
                     setProvinces(data.provinces);
 
                     for (const province of data.provinces) {
-                        await fetchCommunes(province);
+                        await fetchCommunes(province, date);
                     }
                 } else {
                     console.error('Invalid data structure:', data);
@@ -40,24 +29,12 @@ const useFetchProvinces = () => {
             }
         };
 
-        const fetchCommunes = async (province: Province) => {
+        const fetchCommunes = async (province: Province, date: string) => {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_VIETNAM_API_URL;
+                const communesApiUrl = `/api/provinces/${province.code}/communes?date=${date}`;
 
-                if (!apiUrl) {
-                    console.error('API URL not configured!');
-                    return;
-                }
-
-                const communesApiUrl = `${apiUrl}address-kit/${new Date().toISOString().split('T')[0]}/provinces/${province.code}/communes`;
-
-                const response = await fetch(communesApiUrl);
-                if (!response.ok) {
-                    console.error('Failed to fetch communes for province', province.code);
-                    return;
-                }
-
-                const communeData = await response.json();
+                const response = await axios.get(communesApiUrl);
+                const communeData = response.data;
 
                 if (communeData && Array.isArray(communeData.communes)) {
                     setCommunesForProvince(province.code, communeData.communes);
