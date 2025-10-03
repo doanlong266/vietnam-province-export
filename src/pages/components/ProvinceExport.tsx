@@ -7,6 +7,8 @@ import { Province } from '@/interfaces/type';
 import Select from 'react-select';
 import "../css/main.css";
 import TableComponent from './TableComponent';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface SelectedProvince {
     value: string;
@@ -15,7 +17,7 @@ interface SelectedProvince {
 
 const ProvinceExport = () => {
     const [loading, setLoading] = useState(true);
-    const [selectedProvince, setSelectedProvince] = useState<SelectedProvince | null>(null); // Thay 'any' bằng kiểu cụ thể
+    const [selectedProvince, setSelectedProvince] = useState<SelectedProvince | null>(null);
     const provinces = useProvinceStore((state) => state.provinces);
 
     useFetchProvinces();
@@ -68,10 +70,13 @@ const ProvinceExport = () => {
         },
     ];
 
-    const handleProvinceChange = (selectedOption: SelectedProvince | null) => { // Định nghĩa kiểu cho selectedOption
+    const handleProvinceChange = (selectedOption: SelectedProvince | null) => {
         setSelectedProvince(selectedOption);
     };
-
+    const handleExport = () => {
+        exportToExcel(data);
+        toast.success("Dữ liệu đã được xuất thành công!");
+    };
     const provinceOptions = [
         { value: 'all', label: 'Tất cả' },
         ...provinces.map((province) => ({
@@ -93,13 +98,14 @@ const ProvinceExport = () => {
                 />
             </div>
 
-            <button className="export-button" onClick={() => exportToExcel(data)} disabled={loading}>
+            <button className="export-button" onClick={handleExport} disabled={loading}>
                 Xuất Excel
             </button>
 
             <div className="table-container">
                 <TableComponent columns={columns} data={data} />
             </div>
+            <ToastContainer />
         </div>
     );
 };
