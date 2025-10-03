@@ -8,9 +8,14 @@ import Select from 'react-select';
 import "../css/main.css";
 import TableComponent from './TableComponent';
 
+interface SelectedProvince {
+    value: string;
+    label: string;
+}
+
 const ProvinceExport = () => {
     const [loading, setLoading] = useState(true);
-    const [selectedProvince, setSelectedProvince] = useState<any>(null);
+    const [selectedProvince, setSelectedProvince] = useState<SelectedProvince | null>(null); // Thay 'any' bằng kiểu cụ thể
     const provinces = useProvinceStore((state) => state.provinces);
 
     useFetchProvinces();
@@ -63,7 +68,7 @@ const ProvinceExport = () => {
         },
     ];
 
-    const handleProvinceChange = (selectedOption: any) => {
+    const handleProvinceChange = (selectedOption: SelectedProvince | null) => { // Định nghĩa kiểu cho selectedOption
         setSelectedProvince(selectedOption);
     };
 
